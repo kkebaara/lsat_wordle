@@ -11,22 +11,34 @@
       "resizeMode": "contain",
       "backgroundColor": "#1a1a2e"
     },
-    "assetBundlePatterns": ["**/*"],
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.yourcompany.lsatlogic"
-    },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1a1a2e"
       },
-      "package": "com.yourcompany.lsatlogic"
+      "package": "com.yourcompany.lsatlogic",
+      "versionCode": 1,
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ],
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.yourcompany.lsatlogic"
     },
-    "web": {
-      "favicon": "./assets/favicon.png",
-      "name": "LSAT Logic Daily",
-      "shortName": "LSAT Logic"
+    "plugins": [
+      [
+        "expo-ads-admob",
+        {
+          "androidAppId": "ca-app-pub-YOUR_ANDROID_APP_ID"
+        }
+      ],
+      "expo-notifications"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "aace35ab-62b2-4c3a-bdc3-ad02d0a49add"
+      }
     }
   }
 }
