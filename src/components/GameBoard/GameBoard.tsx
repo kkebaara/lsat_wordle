@@ -1,9 +1,20 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
+import { View, StyleSheet, SafeAreaView } from 'react-native';
 import { useGameStore } from '../../store/gameStore';
+import WordRow from '../WordRow/WordRow';
+import VirtualKeyboard from '../Keyboard/VirtualKeyboard';
+import GameHeader from './GameHeader';
+import ResultsModal from './ResultsModal';
 
 const GameBoard: React.FC = () => {
-  const { board, guesses, loadDailyPuzzle, dailyPuzzle } = useGameStore();
+  const {
+    board,
+    guesses,
+    currentRow,
+    gameStatus,
+    loadDailyPuzzle,
+    showResults
+  } = useGameStore();
 
   useEffect(() => {
     loadDailyPuzzle();
@@ -11,29 +22,23 @@ const GameBoard: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>LSAT Logic Daily</Text>
+      <GameHeader />
       
-      {dailyPuzzle && (
-        <View style={styles.questionContainer}>
-          <Text style={styles.question}>{dailyPuzzle.question}</Text>
-        </View>
-      )}
-      
-      <View style={styles.board}>
+      <View style={styles.boardContainer}>
         {board.map((row, rowIndex) => (
-          <View key={rowIndex} style={styles.row}>
-            {row.map((letter, colIndex) => (
-              <View key={colIndex} style={styles.tile}>
-                <Text style={styles.letter}>{letter}</Text>
-              </View>
-            ))}
-          </View>
+          <WordRow
+            key={rowIndex}
+            letters={row}
+            guess={guesses[rowIndex]}
+            isCurrentRow={rowIndex === currentRow && gameStatus === 'playing'}
+            rowIndex={rowIndex}
+          />
         ))}
       </View>
       
-      <Text style={styles.instructions}>
-        Tap here to add keyboard in next step
-      </Text>
+      <VirtualKeyboard />
+      
+      <ResultsModal />
     </SafeAreaView>
   );
 };
@@ -42,55 +47,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#1a1a2e',
-    paddingHorizontal: 20,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    textAlign: 'center',
-    marginVertical: 20,
-  },
-  questionContainer: {
-    backgroundColor: '#2a2a40',
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 20,
-  },
-  question: {
-    fontSize: 16,
-    color: '#e0e0e0',
-    textAlign: 'center',
-  },
-  board: {
+  boardContainer: {
     flex: 1,
     justifyContent: 'center',
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  tile: {
-    width: 56,
-    height: 56,
-    marginHorizontal: 2,
-    borderWidth: 2,
-    borderColor: '#565758',
-    borderRadius: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#16213e',
-  },
-  letter: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#ffffff',
-  },
-  instructions: {
-    color: '#888',
-    textAlign: 'center',
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
   },
 });
 
