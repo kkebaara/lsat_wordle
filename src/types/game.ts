@@ -31,3 +31,14 @@ export interface GameState {
     difficulty: 'easy' | 'medium' | 'hard';
     explanation: string;
   }
+
+  export interface UserStats {
+    gamesPlayed: number;
+    gamesWon: number;
+    currentStreak: number;
+    maxStreak: number;
+    averageGuesses: number;
+    distribution: number[]; // [1, 2, 3, 4, 5, 6] attempts
+    lastPlayedDate: string;
+    totalScore: number;
+  }
