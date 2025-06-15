@@ -1,3 +1,6 @@
+// File: src/components/GameBoard/ResultsModal.tsx
+// Page 6: Results Modal with Share and Stats
+
 import React from 'react';
 import {
   View,
@@ -6,6 +9,7 @@ import {
   Modal,
   TouchableOpacity,
   Share,
+  ScrollView,
 } from 'react-native';
 import { useGameStore } from '../../store/gameStore';
 
@@ -17,8 +21,20 @@ const ResultsModal: React.FC = () => {
     guesses, 
     solution,
     dailyPuzzle,
-    resetGame 
+    resetGame,
+    timeStarted,
+    timeCompleted
   } = useGameStore();
+
+  const calculateScore = () => {
+    if (gameStatus !== 'won') return 0;
+    const baseScore = 1000;
+    const attemptPenalty = (guesses.length - 1) * 100;
+    const timeBonus = timeCompleted && timeStarted 
+      ? Math.max(0, 300 - Math.floor((timeCompleted.getTime() - timeStarted.getTime()) / 1000))
+      : 0;
+    return Math.max(100, baseScore - attemptPenalty + timeBonus);
+  };
 
   const handleShare = async () => {
     const emoji = guesses.map(guess => 
@@ -28,7 +44,7 @@ const ResultsModal: React.FC = () => {
       ).join('')
     ).join('\n');
 
-    const shareText = `LSAT Logic Daily ${gameStatus === 'won' ? guesses.length : 'X'}/6\n\n${emoji}\n\nPlay at: [Your App URL]`;
+    const shareText = `LSAT Logic Daily ${gameStatus === 'won' ? guesses.length : 'X'}/6\n\n${emoji}\n\n🧠 Daily logic training for LSAT success!\nPlay at: [Your App URL]`;
     
     try {
       await Share.share({ message: shareText });
@@ -51,28 +67,34 @@ const ResultsModal: React.FC = () => {
       presentationStyle="pageSheet"
       onRequestClose={() => setShowResults(false)}
     >
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
         <View style={styles.content}>
           <Text style={styles.title}>
-            {gameStatus === 'won' ? '🎉 Congratulations!' : '😔 Game Over'}
+            {gameStatus === 'won' ? '🎉 Excellent!' : '😔 Good Try!'}
           </Text>
           
           <Text style={styles.subtitle}>
             {gameStatus === 'won' 
-              ? `You solved it in ${guesses.length} attempts!`
+              ? `Solved in ${guesses.length} attempt${guesses.length === 1 ? '' : 's'}!`
               : `The answer was: ${solution}`
             }
           </Text>
 
+          {gameStatus === 'won' && (
+            <View style={styles.scoreContainer}>
+              <Text style={styles.scoreText}>Score: {calculateScore()}</Text>
+            </View>
+          )}
+
           {dailyPuzzle && (
             <View style={styles.explanationContainer}>
-              <Text style={styles.explanationTitle}>Explanation:</Text>
+              <Text style={styles.explanationTitle}>💡 Explanation:</Text>
               <Text style={styles.explanation}>{dailyPuzzle.explanation}</Text>
             </View>
           )}
 
-          <View style={styles.statsContainer}>
-            <Text style={styles.statsTitle}>Your Attempts:</Text>
+          <View style={styles.attemptsContainer}>
+            <Text style={styles.attemptsTitle}>Your Attempts:</Text>
             {guesses.map((guess, index) => (
               <View key={index} style={styles.guessRow}>
                 <Text style={styles.guessText}>{guess.word}</Text>
@@ -90,11 +112,11 @@ const ResultsModal: React.FC = () => {
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
-              <Text style={styles.shareButtonText}>Share Results</Text>
+              <Text style={styles.shareButtonText}>📤 Share</Text>
             </TouchableOpacity>
             
             <TouchableOpacity style={styles.playAgainButton} onPress={handlePlayAgain}>
-              <Text style={styles.playAgainButtonText}>Play Again</Text>
+              <Text style={styles.playAgainButtonText}>🔄 New Puzzle</Text>
             </TouchableOpacity>
           </View>
 
@@ -105,7 +127,7 @@ const ResultsModal: React.FC = () => {
             <Text style={styles.closeButtonText}>Close</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
     </Modal>
   );
 };
@@ -114,14 +136,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#1a1a2e',
-    justifyContent: 'center',
-    padding: 20,
   },
   content: {
-    backgroundColor: '#2a2a40',
-    borderRadius: 12,
     padding: 24,
-    alignItems: 'center',
+    paddingTop: 60,
   },
   title: {
     fontSize: 28,
@@ -136,8 +154,20 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
   },
+  scoreContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  scoreText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#6aaa64',
+    marginBottom: 4,
+  },
   explanationContainer: {
-    width: '100%',
+    backgroundColor: '#2a2a40',
+    padding: 16,
+    borderRadius: 8,
     marginBottom: 20,
   },
   explanationTitle: {
@@ -151,11 +181,10 @@ const styles = StyleSheet.create({
     color: '#d0d0d0',
     lineHeight: 20,
   },
-  statsContainer: {
-    width: '100%',
+  attemptsContainer: {
     marginBottom: 24,
   },
-  statsTitle: {
+  attemptsTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#ffffff',
@@ -166,6 +195,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 8,
+    backgroundColor: '#2a2a40',
+    padding: 12,
+    borderRadius: 8,
   },
   guessText: {
     fontSize: 16,
@@ -185,10 +217,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   shareButton: {
+    flex: 1,
     backgroundColor: '#6aaa64',
-    paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
+    alignItems: 'center',
   },
   shareButtonText: {
     color: '#ffffff',
@@ -196,10 +229,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   playAgainButton: {
+    flex: 1,
     backgroundColor: '#c9b458',
-    paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
+    alignItems: 'center',
   },
   playAgainButtonText: {
     color: '#ffffff',
@@ -208,6 +242,7 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     padding: 12,
+    alignItems: 'center',
   },
   closeButtonText: {
     color: '#888',

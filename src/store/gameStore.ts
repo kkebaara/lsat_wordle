@@ -1,3 +1,6 @@
+// File: src/store/gameStore.ts
+// Page 1: Enhanced Game Store with Working Input System
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { GameState, DailyPuzzle, GuessResult } from '../types/game';
@@ -5,12 +8,12 @@ import { LSATGameLogic } from '../utils/gameLogic';
 
 interface GameStore extends GameState {
   // Game actions
-  makeGuess: (guess: string) => void;
   addLetter: (letter: string) => void;
   deleteLetter: () => void;
   submitGuess: () => void;
   loadDailyPuzzle: () => void;
   resetGame: () => void;
+  useHint: () => void;
   
   // UI state
   showResults: boolean;
@@ -90,11 +93,14 @@ export const useGameStore = create<GameStore>()(
         });
       },
 
-      // Legacy function for compatibility
-      makeGuess: (guess: string) => {
-        // This function is kept for backward compatibility
-        // The new approach uses addLetter + submitGuess
-        console.warn('makeGuess is deprecated, use addLetter and submitGuess instead');
+      // Use a hint
+      useHint: () => {
+        const state = get();
+        if (state.hints > 0 && state.gameStatus === 'playing') {
+          set({ hints: state.hints - 1 });
+          // Show hint logic can be added here
+          alert(`Hint: ${state.dailyPuzzle?.hint || 'Think about LSAT concepts!'}`);
+        }
       },
 
       loadDailyPuzzle: () => {
@@ -141,8 +147,10 @@ export const useGameStore = create<GameStore>()(
         guesses: state.guesses,
         gameStatus: state.gameStatus,
         currentRow: state.currentRow,
+        currentCol: state.currentCol,
         board: state.board,
         dailyPuzzle: state.dailyPuzzle,
+        hints: state.hints,
         timeStarted: state.timeStarted,
         timeCompleted: state.timeCompleted
       })
