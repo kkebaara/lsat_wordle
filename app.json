@@ -27,12 +27,6 @@
       "playStoreUrl": "https://play.google.com/store/apps/details?id=com.yourcompany.lsatlogic"
     },
     "plugins": [
-      [
-        "expo-ads-admob",
-        {
-          "androidAppId": "ca-app-pub-YOUR_ANDROID_APP_ID"
-        }
-      ],
       "expo-notifications"
     ],
     "extra": {
